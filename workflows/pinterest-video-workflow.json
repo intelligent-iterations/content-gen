@@ -1,0 +1,265 @@
+{
+  "name": "Pinterest Video Auto-Poster (Zendriver)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8,14,20 * * *"
+            }
+          ]
+        }
+      },
+      "id": "v1",
+      "name": "Schedule (3x Daily)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\n// Scan /videos/ for video folders with captioned or final mp4s\nconst videosDir = '/videos';\nconst videos = [];\n\ntry {\n  const entries = fs.readdirSync(videosDir);\n  for (const entry of entries) {\n    const fullPath = path.join(videosDir, entry);\n    try {\n      const stat = fs.statSync(fullPath);\n      if (stat.isDirectory()) {\n        // Look for captioned or final mp4\n        const files = fs.readdirSync(fullPath);\n        const captioned = files.find(f => f.endsWith('-captioned.mp4'));\n        const final_ = files.find(f => f.endsWith('-final.mp4'));\n        const videoFile = captioned || final_;\n        if (videoFile) {\n          // Look for caption text\n          const captionFile = files.find(f => f.endsWith('-caption.txt'));\n          let caption = '';\n          if (captionFile) {\n            caption = fs.readFileSync(path.join(fullPath, captionFile), 'utf-8').trim();\n          }\n          // Look for .md metadata\n          const mdFile = files.find(f => f.endsWith('.md'));\n          let title = entry.replace(/-\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-/g, ' ');\n          videos.push({\n            folder: entry,\n            videoPath: path.join(fullPath, videoFile),\n            videoFile: videoFile,\n            caption: caption,\n            title: title\n          });\n        }\n      }\n    } catch (e) { /* skip */ }\n  }\n\n  // Also check for standalone captioned videos in /videos/ root\n  for (const entry of entries) {\n    if (entry.endsWith('-captioned.mp4') && !fs.statSync(path.join(videosDir, entry)).isDirectory()) {\n      const title = entry.replace('-captioned.mp4', '').replace(/-\\d{4}-\\d{2}-\\d{2}$/, '').replace(/-/g, ' ');\n      videos.push({\n        folder: entry.replace('.mp4', ''),\n        videoPath: path.join(videosDir, entry),\n        videoFile: entry,\n        caption: '',\n        title: title\n      });\n    }\n  }\n} catch (e) {\n  return [{ json: { skip: true, reason: 'Cannot read /videos/ directory: ' + e.message } }];\n}\n\n// Load posted tracker\nconst trackerPath = '/videos/pinterest-video-posted.json';\nlet posted = [];\ntry {\n  posted = JSON.parse(fs.readFileSync(trackerPath, 'utf-8'));\n} catch (e) { /* no tracker yet */ }\n\nconst postedFolders = new Set(posted.map(p => p.folder));\nconst unposted = videos.filter(v => !postedFolders.has(v.folder));\n\nif (unposted.length === 0) {\n  return [{ json: { skip: true, reason: 'No unposted videos found' } }];\n}\n\nconst selected = unposted[0];\nreturn [{ json: { skip: false, ...selected } }];"
+      },
+      "id": "v2",
+      "name": "Find Unposted Video",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "v3",
+      "name": "Has Video?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.ai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"grok-3-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a Pinterest content strategist for thepom.app, an ingredient scanner app. Given a video title and optional caption, return a JSON object with: title (max 100 chars, engaging for Pinterest), description (max 500 chars, include relevant hashtags), board_name (choose from: 'Skincare Ingredient Warnings', 'Food Ingredient Warnings', 'Home & Air Quality Warnings', 'Product Ingredient Warnings', 'Healthy Product Swaps'). Return ONLY valid JSON, no markdown.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Video title: {{ $json.title }}. Caption: {{ ($json.caption || 'No caption available').substring(0, 300) }}. Generate Pinterest metadata.\"\n    }\n  ],\n  \"max_tokens\": 300\n}",
+        "options": {}
+      },
+      "id": "v4",
+      "name": "Grok Generate Metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xai-credential",
+          "name": "xAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst content = response.choices[0].message.content;\n\nlet parsed;\ntry {\n  const jsonMatch = content.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();\n  parsed = JSON.parse(jsonStr);\n} catch (e) {\n  throw new Error('Failed to parse Grok response: ' + e.message);\n}\n\nreturn [{ json: parsed }];"
+      },
+      "id": "v5",
+      "name": "Parse Grok Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\n\nconst video = $('Find Unposted Video').first().json;\nconst videoPath = video.videoPath;\nconst fileName = video.videoFile;\n\n// Copy video to /downloads/ for Zendriver access\nconst destPath = '/downloads/' + fileName;\nfs.copyFileSync(videoPath, destPath);\n\nreturn [{\n  json: {\n    filePath: destPath,\n    fileName: fileName,\n    folder: video.folder\n  }\n}];"
+      },
+      "id": "v6",
+      "name": "Stage Video to Downloads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "command": "=python3 /scripts/pinterest_video_upload.py --file \"{{ $('Stage Video to Downloads').first().json.filePath }}\" --title \"{{ $('Parse Grok Response').first().json.title }}\" --description \"{{ $('Parse Grok Response').first().json.description }}\" --board \"{{ $('Parse Grok Response').first().json.board_name }}\""
+      },
+      "id": "v7",
+      "name": "Run Zendriver Upload",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\n\nconst video = $('Find Unposted Video').first().json;\nconst grok = $('Parse Grok Response').first().json;\nconst cmdResult = $input.first().json;\n\nlet uploadResult = { status: 'unknown' };\ntry {\n  uploadResult = JSON.parse(cmdResult.stdout || '{}');\n} catch (e) { /* parse failed */ }\n\nconst success = uploadResult.status === 'success';\n\nif (success) {\n  // Update tracker\n  const trackerPath = '/videos/pinterest-video-posted.json';\n  let posted = [];\n  try {\n    posted = JSON.parse(fs.readFileSync(trackerPath, 'utf-8'));\n  } catch (e) { /* new tracker */ }\n\n  posted.push({\n    folder: video.folder,\n    title: grok.title,\n    board: grok.board_name,\n    postedAt: new Date().toISOString()\n  });\n\n  fs.writeFileSync(trackerPath, JSON.stringify(posted, null, 2));\n\n  // Clean up staged video\n  const stagedPath = $('Stage Video to Downloads').first().json.filePath;\n  try { fs.unlinkSync(stagedPath); } catch (e) { /* ok */ }\n}\n\nreturn [{\n  json: {\n    success: success,\n    folder: video.folder,\n    title: grok.title,\n    board: grok.board_name,\n    uploadResult: uploadResult,\n    stderr: cmdResult.stderr || ''\n  }\n}];"
+      },
+      "id": "v8",
+      "name": "Check Result & Track",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { skipped: true, reason: $input.first().json.reason || 'No videos available' } }];"
+      },
+      "id": "v9",
+      "name": "No Videos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.floor(Math.random() * 91) + 30 }}",
+        "unit": "seconds"
+      },
+      "id": "v10",
+      "name": "Random Wait (30-120s)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1250, 400],
+      "disabled": true
+    }
+  ],
+  "connections": {
+    "Schedule (3x Daily)": {
+      "main": [
+        [
+          {
+            "node": "Find Unposted Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Unposted Video": {
+      "main": [
+        [
+          {
+            "node": "Has Video?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Video?": {
+      "main": [
+        [
+          {
+            "node": "Grok Generate Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grok Generate Metadata": {
+      "main": [
+        [
+          {
+            "node": "Parse Grok Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Grok Response": {
+      "main": [
+        [
+          {
+            "node": "Stage Video to Downloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage Video to Downloads": {
+      "main": [
+        [
+          {
+            "node": "Run Zendriver Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Zendriver Upload": {
+      "main": [
+        [
+          {
+            "node": "Check Result & Track",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "pinterest",
+      "id": "3"
+    },
+    {
+      "name": "automation",
+      "id": "2"
+    },
+    {
+      "name": "video",
+      "id": "4"
+    }
+  ]
+}

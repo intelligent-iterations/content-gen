@@ -1,0 +1,262 @@
+{
+  "name": "Pinterest Photo Auto-Poster",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7,13,19 * * *"
+            }
+          ]
+        }
+      },
+      "id": "p1",
+      "name": "Schedule (3x Daily)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\n// Scan both output dirs for slideshow folders\nconst dirs = ['/output', '/output/iteration3'];\nconst folders = [];\n\nfor (const dir of dirs) {\n  try {\n    const entries = fs.readdirSync(dir);\n    for (const entry of entries) {\n      const fullPath = path.join(dir, entry);\n      const metaPath = path.join(fullPath, 'metadata.json');\n      try {\n        const stat = fs.statSync(fullPath);\n        if (stat.isDirectory() && fs.existsSync(metaPath)) {\n          const slides = fs.readdirSync(fullPath).filter(f => f.startsWith('slide_') && (f.endsWith('.jpg') || f.endsWith('.png')));\n          if (slides.length > 0) {\n            folders.push({ dir, name: entry, path: fullPath, slideCount: slides.length });\n          }\n        }\n      } catch (e) { /* skip */ }\n    }\n  } catch (e) { /* dir doesn't exist */ }\n}\n\n// Load posted tracker\nlet posted = [];\nconst trackerPath = '/output/pinterest-posted.json';\ntry {\n  posted = JSON.parse(fs.readFileSync(trackerPath, 'utf-8'));\n} catch (e) { /* no tracker yet */ }\n\nconst postedNames = new Set(posted.map(p => p.folder));\n\n// Find first unposted folder (newest first)\nconst unposted = folders\n  .filter(f => !postedNames.has(f.name))\n  .sort((a, b) => b.name.localeCompare(a.name));\n\nif (unposted.length === 0) {\n  return [{ json: { skip: true, reason: 'No unposted slideshow folders found' } }];\n}\n\nconst selected = unposted[0];\nconst metadata = JSON.parse(fs.readFileSync(path.join(selected.path, 'metadata.json'), 'utf-8'));\n\n// Select best slides (2-5): keep first (hook) and last (CTA), prefer JPG\nlet slideFiles = fs.readdirSync(selected.path)\n  .filter(f => f.startsWith('slide_') && (f.endsWith('.jpg') || f.endsWith('.png')))\n  .sort((a, b) => {\n    const numA = parseInt(a.match(/slide_(\\d+)/)?.[1] || '0');\n    const numB = parseInt(b.match(/slide_(\\d+)/)?.[1] || '0');\n    return numA - numB;\n  });\n\nif (slideFiles.length > 5) {\n  const first = slideFiles[0];\n  const last = slideFiles[slideFiles.length - 1];\n  const middle = slideFiles.slice(1, -1);\n  const jpgs = middle.filter(f => f.endsWith('.jpg'));\n  const pngs = middle.filter(f => f.endsWith('.png'));\n  let picked = jpgs.length >= 3 ? jpgs.slice(0, 3) : [...jpgs, ...pngs.slice(0, 3 - jpgs.length)];\n  picked.sort((a, b) => {\n    const numA = parseInt(a.match(/slide_(\\d+)/)?.[1] || '0');\n    const numB = parseInt(b.match(/slide_(\\d+)/)?.[1] || '0');\n    return numA - numB;\n  });\n  slideFiles = [first, ...picked, last];\n}\n\nconst slidePaths = slideFiles.map(f => path.join(selected.path, f));\n\nreturn [{\n  json: {\n    skip: false,\n    folder: selected.name,\n    folderPath: selected.path,\n    topic: metadata.topic || selected.name,\n    hook: metadata.hook || '',\n    caption: metadata.caption || '',\n    hashtags: metadata.hashtags || [],\n    slideFiles: slideFiles,\n    slidePaths: slidePaths,\n    slideCount: slideFiles.length\n  }\n}];"
+      },
+      "id": "p2",
+      "name": "Find Unposted Slideshow",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "skip-check",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "p3",
+      "name": "Has Content?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.ai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"grok-3-mini\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a Pinterest content strategist for thepom.app, an ingredient scanner app. Given a slideshow topic and caption, return a JSON object with: title (max 100 chars, engaging), description (max 500 chars, include relevant hashtags for Pinterest discovery), board_name (choose from: 'Skincare Ingredient Warnings', 'Food Ingredient Warnings', 'Home & Air Quality Warnings', 'Product Ingredient Warnings', 'Healthy Product Swaps'). Return ONLY valid JSON, no markdown.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Topic: {{ $json.topic }}. Hook: {{ $json.hook }}. Caption preview: {{ $json.caption.substring(0, 200) }}. Generate Pinterest metadata.\"\n    }\n  ],\n  \"max_tokens\": 300\n}",
+        "options": {}
+      },
+      "id": "p4",
+      "name": "Grok Generate Metadata",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xai-credential",
+          "name": "xAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst content = response.choices[0].message.content;\n\nlet parsed;\ntry {\n  const jsonMatch = content.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();\n  parsed = JSON.parse(jsonStr);\n} catch (e) {\n  throw new Error('Failed to parse Grok response: ' + e.message);\n}\n\nreturn [{ json: parsed }];"
+      },
+      "id": "p5",
+      "name": "Parse Grok Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\n\nconst grok = $('Parse Grok Response').first().json;\nconst content = $('Find Unposted Slideshow').first().json;\n\n// Read slide images as binary data\nconst items = [];\nfor (let i = 0; i < content.slidePaths.length; i++) {\n  const filePath = content.slidePaths[i];\n  const fileName = content.slideFiles[i];\n  const buffer = fs.readFileSync(filePath);\n  const base64 = buffer.toString('base64');\n  const mimeType = fileName.endsWith('.png') ? 'image/png' : 'image/jpeg';\n\n  items.push({\n    json: {\n      title: grok.title,\n      description: grok.description,\n      board_name: grok.board_name,\n      folder: content.folder,\n      slideIndex: i,\n      fileName: fileName\n    },\n    binary: {\n      data: {\n        data: base64,\n        mimeType: mimeType,\n        fileName: fileName\n      }\n    }\n  });\n}\n\n// Return just the first item with all images for Pinterest\n// Pinterest Create Pin takes a single image per pin\n// We'll create one pin with the hook slide as the main image\nreturn [items[0]];"
+      },
+      "id": "p6",
+      "name": "Prepare Pin Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "resource": "pin",
+        "operation": "create",
+        "boardId": "={{ $json.board_name }}",
+        "title": "={{ $json.title }}",
+        "description": "={{ $json.description }}",
+        "imageSourceUrl": "",
+        "link": "https://thepom.app",
+        "additionalFields": {}
+      },
+      "id": "p7",
+      "name": "Pinterest Create Pin",
+      "type": "n8n-nodes-base.pinterest",
+      "typeVersion": 1,
+      "position": [1450, 200],
+      "credentials": {
+        "pinterestOAuth2Api": {
+          "id": "pinterest-credential",
+          "name": "Pinterest OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\n\nconst content = $('Find Unposted Slideshow').first().json;\nconst pinResult = $input.first().json;\n\n// Update tracker\nconst trackerPath = '/output/pinterest-posted.json';\nlet posted = [];\ntry {\n  posted = JSON.parse(fs.readFileSync(trackerPath, 'utf-8'));\n} catch (e) { /* new tracker */ }\n\nposted.push({\n  folder: content.folder,\n  pinId: pinResult.id || 'unknown',\n  postedAt: new Date().toISOString(),\n  topic: content.topic\n});\n\nfs.writeFileSync(trackerPath, JSON.stringify(posted, null, 2));\n\nreturn [{\n  json: {\n    success: true,\n    folder: content.folder,\n    topic: content.topic,\n    pinId: pinResult.id\n  }\n}];"
+      },
+      "id": "p8",
+      "name": "Update Tracker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { skipped: true, reason: $input.first().json.reason || 'No content available' } }];"
+      },
+      "id": "p9",
+      "name": "No Content",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Schedule (3x Daily)": {
+      "main": [
+        [
+          {
+            "node": "Find Unposted Slideshow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Unposted Slideshow": {
+      "main": [
+        [
+          {
+            "node": "Has Content?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Content?": {
+      "main": [
+        [
+          {
+            "node": "Grok Generate Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grok Generate Metadata": {
+      "main": [
+        [
+          {
+            "node": "Parse Grok Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Grok Response": {
+      "main": [
+        [
+          {
+            "node": "Prepare Pin Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Pin Data": {
+      "main": [
+        [
+          {
+            "node": "Pinterest Create Pin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinterest Create Pin": {
+      "main": [
+        [
+          {
+            "node": "Update Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "pinterest",
+      "id": "3"
+    },
+    {
+      "name": "automation",
+      "id": "2"
+    }
+  ]
+}

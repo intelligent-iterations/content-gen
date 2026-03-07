@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../scany"
+		},
+		{
+			"path": "../content-upload"
+		},
+		{
+			"path": "../pom_functions"
+		},
+		{
+			"path": "../outreach"
+		}
+	],
+	"settings": {}
+}

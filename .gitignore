@@ -1,0 +1,75 @@
+# Dependencies
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+
+# Session/Auth cookies
+TK_cookies*.json
+youtube_cookies.json
+.pinterest_profile/
+*_cookies.json
+
+# Generated output
+output/
+downloads/*.png
+downloads/*.jpg
+downloads/*.mp4
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Posted content tracking (contains your specific content)
+CURRENT_POSTED_VIDEOS.md
+INSTAGRAM_POSTED_VIDEOS.md
+INSTAGRAM_POSTED_AI_VIDEOS.md
+X_POSTED_VIDEOS.md
+X_POSTED_AI_VIDEOS.md
+REDDIT_POSTED_VIDEOS.md
+TIKTOK_POSTED_AI_VIDEOS.md
+PINTEREST_POSTED_VIDEOS.md
+YOUTUBE_POSTED_VIDEOS.md
+AI_VIDEOS.md
+V3_SLIDESHOWS_POSTED.md
+
+# LaunchD plists (contain local paths)
+*.plist
+
+# Generated videos
+videos/
+
+# Inspiration/reference content
+inspiration/
+iterations/
+
+# Firebase service account
+*-firebase-adminsdk-*.json
+service-account.json
+
+# Fonts (may be copyrighted)
+fonts/*.ttf
+fonts/*.otf
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Shell scripts with hardcoded paths
+run_*.sh

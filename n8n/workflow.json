@@ -1,0 +1,89 @@
+{
+  "name": "pom TikTok Slideshow Generator",
+  "nodes": [
+    {
+      "id": "trigger",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [100, 300],
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 12 }]
+        }
+      }
+    },
+    {
+      "id": "research",
+      "name": "1. Research",
+      "type": "n8n-nodes-base.code",
+      "position": [300, 300],
+      "parameters": {
+        "jsCode": "// Grok API research with web scraping\nconst { runResearch } = require('./n8n/step1-research.js');\nconst result = await runResearch({ category: null });\nreturn [{ json: result }];"
+      }
+    },
+    {
+      "id": "content",
+      "name": "2. Generate Content",
+      "type": "n8n-nodes-base.code",
+      "position": [500, 300],
+      "parameters": {
+        "jsCode": "// Grok API content generation\nconst { generateContent } = require('./n8n/step2-content.js');\nconst input = $input.first().json;\nconst result = await generateContent(input);\nreturn [{ json: result }];"
+      }
+    },
+    {
+      "id": "images",
+      "name": "3. Generate Images",
+      "type": "n8n-nodes-base.code",
+      "position": [700, 300],
+      "parameters": {
+        "jsCode": "// Replicate Seedream-4 image generation\nconst { generateImages } = require('./n8n/step3-images.js');\nconst input = $input.first().json;\nconst outputDir = `/tmp/pom-slideshow-${Date.now()}`;\nconst result = await generateImages(input, outputDir);\nreturn [{ json: { ...result, outputDir } }];"
+      }
+    },
+    {
+      "id": "overlays",
+      "name": "4. Add Text Overlays",
+      "type": "n8n-nodes-base.code",
+      "position": [900, 300],
+      "parameters": {
+        "jsCode": "// Sharp text overlay compositing\nconst { addOverlays } = require('./n8n/step4-overlays.js');\nconst input = $input.first().json;\nconst result = await addOverlays(input, input.outputDir + '/final');\nreturn [{ json: { ...input, ...result } }];"
+      }
+    },
+    {
+      "id": "screenshots",
+      "name": "5. Screenshots (Optional)",
+      "type": "n8n-nodes-base.code",
+      "position": [1100, 300],
+      "parameters": {
+        "jsCode": "// Android emulator screenshot capture\nconst { captureScreenshots } = require('./n8n/step5-screenshots.js');\nconst input = $input.first().json;\nconst result = await captureScreenshots(input, input.outputDir + '/screenshots');\nreturn [{ json: { ...input, ...result } }];"
+      }
+    },
+    {
+      "id": "preview",
+      "name": "6. Generate Preview",
+      "type": "n8n-nodes-base.code",
+      "position": [1300, 300],
+      "parameters": {
+        "jsCode": "// Generate HTML preview with download/copy buttons\nconst { generatePreview } = require('./n8n/step6-preview.js');\nconst input = $input.first().json;\nconst result = await generatePreview(input);\nreturn [{ json: result }];"
+      }
+    },
+    {
+      "id": "notify",
+      "name": "Notify Complete",
+      "type": "n8n-nodes-base.slack",
+      "position": [1500, 300],
+      "parameters": {
+        "channel": "#content",
+        "text": "=New TikTok slideshow ready!\nTopic: {{ $json.topic }}\nPreview: {{ $json.previewUrl }}"
+      }
+    }
+  ],
+  "connections": {
+    "trigger": { "main": [[{ "node": "research", "type": "main", "index": 0 }]] },
+    "research": { "main": [[{ "node": "content", "type": "main", "index": 0 }]] },
+    "content": { "main": [[{ "node": "images", "type": "main", "index": 0 }]] },
+    "images": { "main": [[{ "node": "overlays", "type": "main", "index": 0 }]] },
+    "overlays": { "main": [[{ "node": "screenshots", "type": "main", "index": 0 }]] },
+    "screenshots": { "main": [[{ "node": "preview", "type": "main", "index": 0 }]] },
+    "preview": { "main": [[{ "node": "notify", "type": "main", "index": 0 }]] }
+  }
+}

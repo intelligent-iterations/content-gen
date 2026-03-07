@@ -1,0 +1,9 @@
+# TikTok uploader
+tiktokautouploader
+
+# Pinterest uploader (browser automation)
+zendriver
+python-dotenv
+
+# YouTube uploader (browser automation)
+playwright

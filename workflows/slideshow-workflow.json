@@ -1,0 +1,395 @@
+{
+  "name": "TikTok Slideshow Generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\n// Load content direction\nconst contentPath = '/path/to/your/content-direction.md';\nconst contentDirection = fs.readFileSync(contentPath, 'utf-8');\n\nconst prompt = `\nYou are a viral TikTok content strategist for thepom.app, an ingredient scanner app.\n\n## Your Task\nCreate a TikTok photo slideshow (5-7 slides) based on our content direction.\n\n## Content Direction\n${contentDirection}\n\n## CRITICAL RULES FOR IMAGE PROMPTS\nThe images will have text overlaid on them AFTER generation. Therefore:\n- DO NOT include any text, words, letters, or numbers in the image itself\n- DO NOT describe text that should appear in the image\n- Focus ONLY on visual elements, backgrounds, objects, and mood\n- Images should be clean with space for text overlay (especially top 40%)\n\n## Output Format\nReturn ONLY valid JSON, no markdown, no explanation:\n\n{\n  \"topic\": \"Brief topic title\",\n  \"hook\": \"The scroll-stopping hook for slide 1\",\n  \"slides\": [\n    {\n      \"slide_number\": 1,\n      \"image_prompt\": \"9:16 vertical aspect ratio, [visual description only, NO TEXT]. Clean minimal background with space in upper portion. [specific visual elements]\",\n      \"text_overlay\": \"MAX 8 WORDS - the punchy text for this slide\",\n      \"text_position\": \"top\"\n    }\n  ],\n  \"caption\": \"Engaging caption under 2000 characters.\",\n  \"hashtags\": [\"without\", \"hash\", \"symbols\"]\n}\n\nGenerate a slideshow now. Pick a compelling topic from the content pillars.\n`;\n\nreturn [{ json: { prompt } }];"
+      },
+      "id": "2",
+      "name": "Load Content Direction",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.x.ai/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"grok-4-1-fast\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a viral TikTok content strategist. Always respond with valid JSON only.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $json.prompt }}\"\n    }\n  ],\n  \"max_tokens\": 4000,\n  \"temperature\": 0.8\n}",
+        "options": {}
+      },
+      "id": "3",
+      "name": "Generate Content (Grok)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xai-credential",
+          "name": "xAI API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst content = response.choices[0].message.content;\n\n// Parse JSON, handling potential markdown code blocks\nlet parsed;\ntry {\n  const jsonMatch = content.match(/```(?:json)?\\s*([\\s\\S]*?)```/);\n  const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();\n  parsed = JSON.parse(jsonStr);\n} catch (e) {\n  throw new Error('Failed to parse Grok response: ' + e.message);\n}\n\nreturn [{ json: parsed }];"
+      },
+      "id": "4",
+      "name": "Parse Grok Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "slides",
+        "options": {}
+      },
+      "id": "5",
+      "name": "Split Slides",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"version\": \"black-forest-labs/flux-schnell\",\n  \"input\": {\n    \"prompt\": \"{{ $json.image_prompt }}\",\n    \"aspect_ratio\": \"9:16\",\n    \"output_format\": \"jpg\",\n    \"output_quality\": 90,\n    \"num_outputs\": 1\n  }\n}",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Start Image Generation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1250, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "replicate-credential",
+          "name": "Replicate API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "7",
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.replicate.com/v1/predictions/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "8",
+      "name": "Check Prediction Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1650, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "replicate-credential",
+          "name": "Replicate API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9",
+      "name": "Is Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Note: In a real n8n workflow, you would use the Sharp node or Code node\n// with Sharp installed to add text overlays. This is a placeholder.\n// \n// For the full implementation, use the Node.js code from:\n// code/add-text-overlay.js\n\nconst imageUrl = $input.first().json.output[0];\nconst slide = $input.first().json;\n\nreturn [{\n  json: {\n    slide_number: slide.slide_number,\n    text_overlay: slide.text_overlay,\n    text_position: slide.text_position,\n    imageUrl: imageUrl,\n    // In real workflow: processedImageUrl would be set after overlay\n    processedImageUrl: imageUrl\n  }\n}];"
+      },
+      "id": "10",
+      "name": "Process Image (Add Text)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2050, 200]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "mergeByFields": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "11",
+      "name": "Collect All Slides",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [2250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/content/init/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post_mode\": \"DIRECT_POST\",\n  \"media_type\": \"PHOTO\",\n  \"post_info\": {\n    \"title\": \"{{ $json.caption }}\",\n    \"privacy_level\": \"SELF_ONLY\",\n    \"auto_add_music\": true\n  },\n  \"source_info\": {\n    \"source\": \"PULL_FROM_URL\",\n    \"photo_images\": {{ JSON.stringify($json.imageUrls) }},\n    \"photo_cover_index\": 0\n  }\n}",
+        "options": {}
+      },
+      "id": "12",
+      "name": "Upload to TikTok",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tiktok-credential",
+          "name": "TikTok Access Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    success: true,\n    message: 'Slideshow uploaded to TikTok drafts!',\n    instructions: [\n      'Open your TikTok app',\n      'Go to Inbox → System notifications',\n      'Find \"Your content is ready for editing\"',\n      'Change privacy to \"Everyone\" and post!'\n    ]\n  }\n}];"
+      },
+      "id": "13",
+      "name": "Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2650, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Content Direction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Content Direction": {
+      "main": [
+        [
+          {
+            "node": "Generate Content (Grok)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Content (Grok)": {
+      "main": [
+        [
+          {
+            "node": "Parse Grok Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Grok Response": {
+      "main": [
+        [
+          {
+            "node": "Split Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Slides": {
+      "main": [
+        [
+          {
+            "node": "Start Image Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Image Generation": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Check Prediction Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Prediction Status": {
+      "main": [
+        [
+          {
+            "node": "Is Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Complete?": {
+      "main": [
+        [
+          {
+            "node": "Process Image (Add Text)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Image (Add Text)": {
+      "main": [
+        [
+          {
+            "node": "Collect All Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect All Slides": {
+      "main": [
+        [
+          {
+            "node": "Upload to TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to TikTok": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "1",
+  "triggerCount": 0,
+  "tags": [
+    {
+      "name": "tiktok",
+      "id": "1"
+    },
+    {
+      "name": "automation",
+      "id": "2"
+    }
+  ]
+}

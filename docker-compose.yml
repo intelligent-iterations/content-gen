@@ -1,0 +1,18 @@
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=America/New_York
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./scripts:/scripts
+      - ./downloads:/downloads
+      - ./output:/output
+      - ./videos:/videos
+      - ./.env:/env/.env
+
+volumes:
+  n8n_data:
