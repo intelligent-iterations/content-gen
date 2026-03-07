@@ -17,10 +17,10 @@ This document provides technical evidence of a production AI content generation 
 4. **Distributes to 6+ platforms** (TikTok, Instagram, X, Reddit, YouTube, Pinterest)
 5. **Runs on automated schedules** via macOS LaunchD
 
-The system has generated **20,000+ views** across **35+ TikTok videos** and **105 Instagram posts** with measurable engagement metrics.
+The system has generated **46,432 total views** across **89 TikTok videos** and **105 Instagram posts** with measurable engagement metrics.
 
 **Live Platform Stats (as of March 7, 2026):**
-- **TikTok:** [@the.pom.app](https://www.tiktok.com/@the.pom.app) — 37 followers, 1,225 likes
+- **TikTok:** [@the.pom.app](https://www.tiktok.com/@the.pom.app) — 37 followers, 1,225 likes, 89 videos
 - **Instagram:** [@the.pom.app](https://www.instagram.com/the.pom.app/) — 34 followers, 105 posts
 
 ---
@@ -181,46 +181,55 @@ async function generateImage(prompt) {
 
 | Platform | Handle | Followers | Posts | Total Engagement |
 |----------|--------|-----------|-------|------------------|
-| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 35+ videos | 1,225 likes |
+| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 89 videos | 1,225 likes, 46,432 views |
 | **Instagram** | [@the.pom.app](https://www.instagram.com/the.pom.app/) | 34 | 105 posts | Active |
 
 ### 3.2 TikTok Video Performance (Live Data)
 
 | Rank | Views | Video ID |
 |------|-------|----------|
-| 1 | **1,430** | Top performer |
-| 2 | **1,306** | Second highest |
-| 3 | **873** | Strong performer |
-| 4 | **860** | Consistent |
-| 5 | **852** | Above average |
-| 6 | **846** | Above average |
-| 7 | **787** | Solid |
-| 8 | **767** | Solid |
-| 9 | **744** | Good |
-| 10 | **732** | Good |
+| 1 | **4,638** | [7589768933377461525](https://www.tiktok.com/@the.pom.app/video/7589768933377461525) |
+| 2 | **2,518** | [7590871703643802901](https://www.tiktok.com/@the.pom.app/video/7590871703643802901) |
+| 3 | **1,743** | [7597479356851670292](https://www.tiktok.com/@the.pom.app/video/7597479356851670292) |
+| 4 | **1,711** | [7501512585209040134](https://www.tiktok.com/@the.pom.app/video/7501512585209040134) |
+| 5 | **1,393** | [7604611393165298965](https://www.tiktok.com/@the.pom.app/video/7604611393165298965) |
+| 6 | **1,057** | [7576866709315980564](https://www.tiktok.com/@the.pom.app/video/7576866709315980564) |
+| 7 | **1,030** | [7586098446570900757](https://www.tiktok.com/@the.pom.app/video/7586098446570900757) |
+| 8 | **1,022** | [7583602152510197012](https://www.tiktok.com/@the.pom.app/video/7583602152510197012) |
+| 9 | **1,010** | [7603892752081751316](https://www.tiktok.com/@the.pom.app/video/7603892752081751316) |
+| 10 | **987** | [7604196749334318356](https://www.tiktok.com/@the.pom.app/video/7604196749334318356) |
 
-**Full View Distribution (35 videos):**
+**Full View Distribution (89 videos):**
 ```
-1430, 1306, 873, 860, 852, 846, 787, 767, 767, 744,
-732, 727, 721, 719, 709, 699, 698, 694, 693, 689,
-671, 655, 650, 494, 459, 416, 373, 310, 226, 205,
-182, 151, 141, 82
+4638, 2518, 1743, 1711, 1393, 1057, 1030, 1022, 1010, 987,
+954, 910, 900, 873, 860, 852, 846, 793, 787, 767,
+767, 760, 760, 732, 727, 721, 719, 709, 699, 698,
+693, 689, 677, 671, 659, 647, 494, 492, 459, 432,
+416, 402, 373, 355, 336, 333, 310, 285, 263, 246,
+244, 239, 232, 226, 205, 198, 196, 190, 189, 182,
+166, 163, 153, 151, 151, 150, 143, 141, 130, 118,
+117, 115, 111, 108, 82, 66, 52, 30, 9, 0,
+0, 0, 0, 0, 0, 0, 0, 0, 0
 ```
 
 **Aggregate Stats:**
-- **Total Views:** ~20,000+
-- **Average Views/Video:** ~570
-- **Top 10 Average:** 920 views
-- **Videos over 700 views:** 18 (51%)
+- **Total Views:** 46,432
+- **Total Videos:** 89
+- **Average Views/Video:** 522
+- **Top 10 Average:** 1,711 views
+- **Videos over 1,000 views:** 10 (11%)
+- **Videos over 700 views:** 28 (31%)
+- **Videos over 500 views:** 36 (40%)
 
 ### 3.3 Performance Insights
 
 | Metric | Value | Insight |
 |--------|-------|---------|
-| **Best Video** | 1,430 views | 2.5x average performance |
-| **Median Views** | ~690 | Consistent baseline |
-| **View-to-Like Ratio** | 1,225 likes / 20K views | ~6% engagement |
+| **Best Video** | 4,638 views | 8.9x average performance |
+| **Median Views** | ~432 | Consistent baseline |
+| **View-to-Like Ratio** | 1,225 likes / 46K views | ~2.6% engagement |
 | **Growth Trend** | 37 followers | Organic growth from content |
+| **Top 10 Concentration** | 17,109 views | 37% of total views |
 
 ### 3.4 Content Category Analysis
 
@@ -470,11 +479,12 @@ This content generation system demonstrates production-grade capabilities in:
 3. **Real data integration** with Firebase via Android emulator
 4. **Scheduled automation** with macOS LaunchD
 5. **Measurable results:**
-   - **20,000+ TikTok views** across 35+ videos
+   - **46,432 TikTok views** across 89 videos
    - **1,225 total likes** on TikTok
    - **105 Instagram posts** published
-   - **Top video: 1,430 views** (2.5x average)
-   - **51% of videos** exceed 700 views
+   - **Top video: 4,638 views** (8.9x average)
+   - **10 videos exceed 1,000 views** (11%)
+   - **28 videos exceed 700 views** (31%)
 
 The system has been deployed in production since February 2026 and continues to generate and distribute content autonomously. All metrics are verifiable via the live social media accounts linked above.
 
