@@ -17,12 +17,12 @@ This document provides technical evidence of a production AI content generation 
 4. **Distributes to 6+ platforms** (TikTok, Instagram, X, Reddit, YouTube, Pinterest)
 5. **Runs on automated schedules** via macOS LaunchD
 
-The system has generated **110,000+ total views** across both platforms with measurable engagement metrics:
-- **TikTok:** 46,432 views across 89 videos
+The system has generated **82,967 total views** across both platforms with measurable engagement metrics:
+- **TikTok:** 18,916 views across 33 AI-generated videos (since Jan 31, 2026)
 - **Instagram:** 64,051 views across 67 posts
 
 **Live Platform Stats (as of March 8, 2026):**
-- **TikTok:** [@the.pom.app](https://www.tiktok.com/@the.pom.app) — 37 followers, 1,225 likes, 89 videos
+- **TikTok:** [@the.pom.app](https://www.tiktok.com/@the.pom.app) — 37 followers, 33 AI videos, 18.9K views
 - **Instagram:** [@the.pom.app](https://www.instagram.com/the.pom.app/) — 34 followers, 67 posts, **12.2K top post**
 
 ---
@@ -181,49 +181,47 @@ async function generateImage(prompt) {
 
 ### 3.1 Platform Overview
 
+> **Note:** TikTok metrics only include AI-generated content (Jan 31, 2026 onwards)
+
 | Platform | Handle | Followers | Posts | Total Views | Top Post |
 |----------|--------|-----------|-------|-------------|----------|
-| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 89 videos | 46,432 | 4,638 |
+| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 33 AI videos | 18,916 | 1,393 |
 | **Instagram** | [@the.pom.app](https://www.instagram.com/the.pom.app/) | 34 | 67 posts | 64,051 | **12,200** |
-| **Combined** | — | 71 | 156 posts | **110,483** | 12,200 |
+| **Combined** | — | 71 | 100 posts | **82,967** | 12,200 |
 
-### 3.2 TikTok Video Performance (Live Data)
+### 3.2 TikTok Video Performance (AI-Generated Only)
 
-| Rank | Views | Video ID |
-|------|-------|----------|
-| 1 | **4,638** | [7589768933377461525](https://www.tiktok.com/@the.pom.app/video/7589768933377461525) |
-| 2 | **2,518** | [7590871703643802901](https://www.tiktok.com/@the.pom.app/video/7590871703643802901) |
-| 3 | **1,743** | [7597479356851670292](https://www.tiktok.com/@the.pom.app/video/7597479356851670292) |
-| 4 | **1,711** | [7501512585209040134](https://www.tiktok.com/@the.pom.app/video/7501512585209040134) |
-| 5 | **1,393** | [7604611393165298965](https://www.tiktok.com/@the.pom.app/video/7604611393165298965) |
-| 6 | **1,057** | [7576866709315980564](https://www.tiktok.com/@the.pom.app/video/7576866709315980564) |
-| 7 | **1,030** | [7586098446570900757](https://www.tiktok.com/@the.pom.app/video/7586098446570900757) |
-| 8 | **1,022** | [7583602152510197012](https://www.tiktok.com/@the.pom.app/video/7583602152510197012) |
-| 9 | **1,010** | [7603892752081751316](https://www.tiktok.com/@the.pom.app/video/7603892752081751316) |
-| 10 | **987** | [7604196749334318356](https://www.tiktok.com/@the.pom.app/video/7604196749334318356) |
+> **Data Source:** AI-generated videos posted January 31, 2026 onwards
 
-**Full View Distribution (89 videos):**
+| Rank | Views | Date | Video ID |
+|------|-------|------|----------|
+| 1 | **1,393** | Feb 8 | [7604611393165298965](https://www.tiktok.com/@the.pom.app/video/7604611393165298965) |
+| 2 | **1,010** | Feb 6 | [7603892752081751316](https://www.tiktok.com/@the.pom.app/video/7603892752081751316) |
+| 3 | **987** | Feb 7 | [7604196749334318356](https://www.tiktok.com/@the.pom.app/video/7604196749334318356) |
+| 4 | **873** | Feb 11 | [7605660888179264788](https://www.tiktok.com/@the.pom.app/video/7605660888179264788) |
+| 5 | **860** | Feb 15 | [7607158490129386773](https://www.tiktok.com/@the.pom.app/video/7607158490129386773) |
+| 6 | **852** | Feb 11 | [7605722974653517076](https://www.tiktok.com/@the.pom.app/video/7605722974653517076) |
+| 7 | **846** | Feb 12 | [7606021584704294165](https://www.tiktok.com/@the.pom.app/video/7606021584704294165) |
+| 8 | **787** | Feb 13 | [7606371506293181716](https://www.tiktok.com/@the.pom.app/video/7606371506293181716) |
+| 9 | **767** | Feb 12 | [7606115019020832021](https://www.tiktok.com/@the.pom.app/video/7606115019020832021) |
+| 10 | **732** | Feb 19 | [7608687444854181141](https://www.tiktok.com/@the.pom.app/video/7608687444854181141) |
+
+**Full View Distribution (33 AI videos):**
 ```
-4638, 2518, 1743, 1711, 1393, 1057, 1030, 1022, 1010, 987,
-954, 910, 900, 873, 860, 852, 846, 793, 787, 767,
-767, 760, 760, 732, 727, 721, 719, 709, 699, 698,
-693, 689, 677, 671, 659, 647, 494, 492, 459, 432,
-416, 402, 373, 355, 336, 333, 310, 285, 263, 246,
-244, 239, 232, 226, 205, 198, 196, 190, 189, 182,
-166, 163, 153, 151, 151, 150, 143, 141, 130, 118,
-117, 115, 111, 108, 82, 66, 52, 30, 9, 0,
-0, 0, 0, 0, 0, 0, 0, 0, 0
+1393, 1010, 987, 873, 860, 852, 846, 787, 767, 732,
+727, 721, 719, 709, 699, 698, 693, 689, 671, 494,
+459, 416, 373, 336, 310, 226, 205, 182, 151, 141,
+108, 82, 0
 ```
 
 **Aggregate Stats:**
-- **Total Views:** 46,432
-- **Total Videos:** 89
-- **Average Views/Video:** 522
-- **Top 10 Average:** 1,711 views
-- **Videos over 1,000 views:** 9 (10%)
-- **Videos over 700 views:** 28 (31%)
-- **Videos over 500 views:** 36 (40%)
-- **Videos with 0 views:** 10 (11%)
+- **Total Views:** 18,916
+- **Total AI Videos:** 33
+- **Average Views/Video:** 573
+- **Top 10 Average:** 911 views
+- **Videos over 700 views:** 14 (42%)
+- **Videos over 500 views:** 19 (58%)
+- **Videos with 0 views:** 1 (3%)
 
 ### 3.3 Instagram Post Performance (Live Data)
 
@@ -253,13 +251,13 @@ async function generateImage(prompt) {
 
 ### 3.4 Cross-Platform Performance Insights
 
-| Metric | TikTok | Instagram | Combined |
-|--------|--------|-----------|----------|
-| **Total Views** | 46,432 | 64,051 | **110,483** |
-| **Total Posts** | 89 | 67 | 156 |
-| **Average Views** | 522 | 955 | 708 |
-| **Top Post** | 4,638 | 12,200 | 12,200 |
-| **Posts >1K views** | 9 (10%) | 13 (19%) | 22 (14%) |
+| Metric | TikTok (AI) | Instagram | Combined |
+|--------|-------------|-----------|----------|
+| **Total Views** | 18,916 | 64,051 | **82,967** |
+| **Total Posts** | 33 | 67 | 100 |
+| **Average Views** | 573 | 955 | 830 |
+| **Top Post** | 1,393 | 12,200 | 12,200 |
+| **Posts >700 views** | 14 (42%) | 24 (36%) | 38 (38%) |
 
 ### 3.5 Content Category Analysis
 
@@ -495,7 +493,7 @@ At 3 posts/day across platforms:
 
 | Platform | Handle | Link | Stats |
 |----------|--------|------|-------|
-| **TikTok** | @the.pom.app | https://www.tiktok.com/@the.pom.app | 37 followers, 1,225 likes, 46K views |
+| **TikTok** | @the.pom.app | https://www.tiktok.com/@the.pom.app | 37 followers, 33 AI videos, 18.9K views |
 | **Instagram** | @the.pom.app | https://www.instagram.com/the.pom.app/ | 34 followers, 67 posts, 64K views |
 
 ---
@@ -509,12 +507,12 @@ This content generation system demonstrates production-grade capabilities in:
 3. **Real data integration** with Firebase via Android emulator
 4. **Scheduled automation** with macOS LaunchD
 5. **Measurable results:**
-   - **110,483 total views** across both platforms
-   - **46,432 TikTok views** across 89 videos
+   - **82,967 total views** across both platforms
+   - **18,916 TikTok views** across 33 AI-generated videos (since Jan 31, 2026)
    - **64,051 Instagram views** across 67 posts
-   - **Top post: 12,200 views** on Instagram (12.8x average)
-   - **22 posts exceed 1,000 views** (14% of total)
-   - **3 posts exceed 5,000 views** (viral tier)
+   - **Top post: 12,200 views** on Instagram (14.7x average)
+   - **14 TikTok videos exceed 700 views** (42%)
+   - **3 Instagram posts exceed 5,000 views** (viral tier)
 
 The system has been deployed in production since February 2026 and continues to generate and distribute content autonomously. All metrics are verifiable via the live social media accounts and Instagram Professional Dashboard linked above.
 
