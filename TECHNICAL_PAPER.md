@@ -17,11 +17,13 @@ This document provides technical evidence of a production AI content generation 
 4. **Distributes to 6+ platforms** (TikTok, Instagram, X, Reddit, YouTube, Pinterest)
 5. **Runs on automated schedules** via macOS LaunchD
 
-The system has generated **46,432 total views** across **89 TikTok videos** and **105 Instagram posts** with measurable engagement metrics.
+The system has generated **110,000+ total views** across both platforms with measurable engagement metrics:
+- **TikTok:** 46,432 views across 89 videos
+- **Instagram:** 64,051 views across 67 posts
 
-**Live Platform Stats (as of March 7, 2026):**
+**Live Platform Stats (as of March 8, 2026):**
 - **TikTok:** [@the.pom.app](https://www.tiktok.com/@the.pom.app) — 37 followers, 1,225 likes, 89 videos
-- **Instagram:** [@the.pom.app](https://www.instagram.com/the.pom.app/) — 34 followers, 105 posts
+- **Instagram:** [@the.pom.app](https://www.instagram.com/the.pom.app/) — 34 followers, 67 posts, **12.2K top post**
 
 ---
 
@@ -175,14 +177,15 @@ async function generateImage(prompt) {
 
 ## 3. Production Performance Data
 
-> **Data Source:** Live metrics scraped from TikTok and Instagram on March 7, 2026
+> **Data Source:** Live metrics from TikTok profile and Instagram Professional Dashboard (March 8, 2026)
 
 ### 3.1 Platform Overview
 
-| Platform | Handle | Followers | Posts | Total Engagement |
-|----------|--------|-----------|-------|------------------|
-| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 89 videos | 1,225 likes, 46,432 views |
-| **Instagram** | [@the.pom.app](https://www.instagram.com/the.pom.app/) | 34 | 105 posts | Active |
+| Platform | Handle | Followers | Posts | Total Views | Top Post |
+|----------|--------|-----------|-------|-------------|----------|
+| **TikTok** | [@the.pom.app](https://www.tiktok.com/@the.pom.app) | 37 | 89 videos | 46,432 | 4,638 |
+| **Instagram** | [@the.pom.app](https://www.instagram.com/the.pom.app/) | 34 | 67 posts | 64,051 | **12,200** |
+| **Combined** | — | 71 | 156 posts | **110,483** | 12,200 |
 
 ### 3.2 TikTok Video Performance (Live Data)
 
@@ -222,17 +225,43 @@ async function generateImage(prompt) {
 - **Videos over 500 views:** 36 (40%)
 - **Videos with 0 views:** 10 (11%)
 
-### 3.3 Performance Insights
+### 3.3 Instagram Post Performance (Live Data)
 
-| Metric | Value | Insight |
-|--------|-------|---------|
-| **Best Video** | 4,638 views | 8.9x average performance |
-| **Median Views** | 336 | Consistent baseline |
-| **View-to-Like Ratio** | 1,225 likes / 46K views | ~2.6% engagement |
-| **Growth Trend** | 37 followers | Organic growth from content |
-| **Top 10 Concentration** | 17,109 views | 37% of total views |
+> **Data Source:** Instagram Professional Dashboard - Content Insights (March 8, 2026)
 
-### 3.4 Content Category Analysis
+| Rank | Views | Description |
+|------|-------|-------------|
+| 1 | **12,200** | Top performer (viral) |
+| 2 | **6,900** | Strong viral reach |
+| 3 | **5,500** | High engagement |
+| 4 | **2,600** | Above average |
+| 5 | **2,300** | Above average |
+| 6 | **2,300** | Above average |
+| 7 | **1,900** | Strong performer |
+| 8 | **1,700** | Strong performer |
+| 9 | **1,300** | Good reach |
+| 10 | **1,100** | Good reach |
+
+**Instagram Aggregate Stats:**
+- **Total Views:** 64,051
+- **Total Posts:** 67
+- **Average Views/Post:** 955
+- **Top 10 Average:** 3,780 views
+- **Posts over 5,000 views:** 3 (4%)
+- **Posts over 1,000 views:** 13 (19%)
+- **Posts over 500 views:** 28 (42%)
+
+### 3.4 Cross-Platform Performance Insights
+
+| Metric | TikTok | Instagram | Combined |
+|--------|--------|-----------|----------|
+| **Total Views** | 46,432 | 64,051 | **110,483** |
+| **Total Posts** | 89 | 67 | 156 |
+| **Average Views** | 522 | 955 | 708 |
+| **Top Post** | 4,638 | 12,200 | 12,200 |
+| **Posts >1K views** | 9 (10%) | 13 (19%) | 22 (14%) |
+
+### 3.5 Content Category Analysis
 
 | Category | Performance | Notes |
 |----------|-------------|-------|
@@ -466,8 +495,8 @@ At 3 posts/day across platforms:
 
 | Platform | Handle | Link | Stats |
 |----------|--------|------|-------|
-| **TikTok** | @the.pom.app | https://www.tiktok.com/@the.pom.app | 37 followers, 1,225 likes |
-| **Instagram** | @the.pom.app | https://www.instagram.com/the.pom.app/ | 34 followers, 105 posts |
+| **TikTok** | @the.pom.app | https://www.tiktok.com/@the.pom.app | 37 followers, 1,225 likes, 46K views |
+| **Instagram** | @the.pom.app | https://www.instagram.com/the.pom.app/ | 34 followers, 67 posts, 64K views |
 
 ---
 
@@ -480,14 +509,14 @@ This content generation system demonstrates production-grade capabilities in:
 3. **Real data integration** with Firebase via Android emulator
 4. **Scheduled automation** with macOS LaunchD
 5. **Measurable results:**
+   - **110,483 total views** across both platforms
    - **46,432 TikTok views** across 89 videos
-   - **1,225 total likes** on TikTok
-   - **105 Instagram posts** published
-   - **Top video: 4,638 views** (8.9x average)
-   - **9 videos exceed 1,000 views** (10%)
-   - **28 videos exceed 700 views** (31%)
+   - **64,051 Instagram views** across 67 posts
+   - **Top post: 12,200 views** on Instagram (12.8x average)
+   - **22 posts exceed 1,000 views** (14% of total)
+   - **3 posts exceed 5,000 views** (viral tier)
 
-The system has been deployed in production since February 2026 and continues to generate and distribute content autonomously. All metrics are verifiable via the live social media accounts linked above.
+The system has been deployed in production since February 2026 and continues to generate and distribute content autonomously. All metrics are verifiable via the live social media accounts and Instagram Professional Dashboard linked above.
 
 ---
 
