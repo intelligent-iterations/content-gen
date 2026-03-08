@@ -191,37 +191,28 @@ async function generateImage(prompt) {
 
 ### 3.2 TikTok Video Performance (AI-Generated Only)
 
-> **Data Source:** AI-generated videos posted January 31, 2026 onwards
+> **Data Source:** TikTok profile scraped March 8, 2026. Only includes AI-generated videos (Jan 31, 2026+).
 
-| Rank | Views | Date | Video ID |
-|------|-------|------|----------|
-| 1 | **1,393** | Feb 8 | [7604611393165298965](https://www.tiktok.com/@the.pom.app/video/7604611393165298965) |
-| 2 | **1,010** | Feb 6 | [7603892752081751316](https://www.tiktok.com/@the.pom.app/video/7603892752081751316) |
-| 3 | **987** | Feb 7 | [7604196749334318356](https://www.tiktok.com/@the.pom.app/video/7604196749334318356) |
-| 4 | **873** | Feb 11 | [7605660888179264788](https://www.tiktok.com/@the.pom.app/video/7605660888179264788) |
-| 5 | **860** | Feb 15 | [7607158490129386773](https://www.tiktok.com/@the.pom.app/video/7607158490129386773) |
-| 6 | **852** | Feb 11 | [7605722974653517076](https://www.tiktok.com/@the.pom.app/video/7605722974653517076) |
-| 7 | **846** | Feb 12 | [7606021584704294165](https://www.tiktok.com/@the.pom.app/video/7606021584704294165) |
-| 8 | **787** | Feb 13 | [7606371506293181716](https://www.tiktok.com/@the.pom.app/video/7606371506293181716) |
-| 9 | **767** | Feb 12 | [7606115019020832021](https://www.tiktok.com/@the.pom.app/video/7606115019020832021) |
-| 10 | **732** | Feb 19 | [7608687444854181141](https://www.tiktok.com/@the.pom.app/video/7608687444854181141) |
+| Rank | Views | Description |
+|------|-------|-------------|
+| 1 | **1,393** | Top AI performer |
+| 2 | **1,010** | Strong reach |
+| 3 | **987** | Strong reach |
+| 4 | **873** | Above average |
+| 5 | **860** | Above average |
+| 6 | **852** | Above average |
+| 7 | **846** | Above average |
+| 8 | **787** | Good performer |
+| 9 | **767** | Good performer |
+| 10 | **732** | Good performer |
 
-**Full View Distribution (33 AI videos):**
-```
-1393, 1010, 987, 873, 860, 852, 846, 787, 767, 732,
-727, 721, 719, 709, 699, 698, 693, 689, 671, 494,
-459, 416, 373, 336, 310, 226, 205, 182, 151, 141,
-108, 82, 0
-```
-
-**Aggregate Stats:**
+**TikTok Aggregate Stats:**
 - **Total Views:** 18,916
 - **Total AI Videos:** 33
 - **Average Views/Video:** 573
 - **Top 10 Average:** 911 views
 - **Videos over 700 views:** 14 (42%)
 - **Videos over 500 views:** 19 (58%)
-- **Videos with 0 views:** 1 (3%)
 
 ### 3.3 Instagram Post Performance (Live Data)
 
