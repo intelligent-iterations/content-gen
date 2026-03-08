@@ -178,6 +178,10 @@ async function generateImage(prompt) {
 ## 3. Production Performance Data
 
 > **Data Source:** Live metrics from TikTok profile and Instagram Professional Dashboard (March 8, 2026)
+>
+> **Raw Data Screenshots:**
+> - [TikTok Profile Screenshot](data-sources/tiktok-profile-2026-03-07.png)
+> - [Instagram Insights Dashboard](data-sources/instagram-insights-2026-03-08.png)
 
 ### 3.1 Platform Overview
 
